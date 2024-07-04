@@ -1,0 +1,7 @@
+﻿.text-bold {
+    font-weight: bold;
+}
+
+td:first-of-type {
+    width: 1px;
+}

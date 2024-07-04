@@ -1,0 +1,201 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Inventories</title>
+
+    <link href="https://web-assets.local/shared.css" rel="stylesheet">
+    <link href="https://web-assets.local/Bootstrap/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <main class="container">
+        <h1 class="h3">Inventories</h1>
+        <div class="d-flex">
+            <a href="Upsert.html" class="d-inline-block btn btn-outline-primary mb-3 me-3">Create</a>
+        </div>
+
+        <table class="table table-striped table-hover align-middle" id="inventories">
+            <thead>
+                <tr>
+                    <th scope="col">Widget</th>
+                    <th scope="col">Widget Type</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Total</th>
+                    <th scope="col">Edit</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="tr-loading">
+                    <td class="text-center fs-3" colspan="6">Loading...</td>
+                </tr>
+                <tr id="tr-no-data" class="d-none">
+                    <td class="text-center fs-3" colspan="6">No inventories, please create a new one.</td>
+                </tr>
+                <tr id="tr-error" class="d-none">
+                    <td class="text-center fs-3" colspan="6">Something went wrong getting the inventories.</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+    <template id="template-tr-inventory">
+        <tr>
+            <td class="widget-name"></td>
+            <td class="widget-type-name"></td>
+            <td class="widget-price"></td>
+            <td class="quantity"></td>
+            <td class="total"></td>
+            <td>
+                <a href="Upsert.html" class="btn btn-primary href-inventory-id">Edit</a>
+            </td>
+        </tr>
+    </template>
+
+    <script src="https://web-assets.local/shared.js"></script>
+    <script src="https://web-assets.local/bootstrap/js/bootstrap.bundle.js"></script>
+    <script>
+        // page methods
+        const inventories = [];
+
+        const buildTableBody = inventories => {
+            inventories = inventories || [];
+            updateTableBodyState(inventories);
+
+            const tbody = document.querySelector('#inventories > tbody');
+            if (!inventories.length) {
+                return;
+            }
+
+            const template = document.querySelector('#template-tr-inventory');
+            inventories.forEach(inventory => {
+                const clone = template.content.cloneNode(true);
+
+                const widgetName = clone.querySelector('td.widget-name');
+                if (widgetName) {
+                    widgetName.innerText = inventory.WidgetName || '';
+                }
+        
+                const widgetTypeName = clone.querySelector('td.widget-type-name');
+                if (widgetTypeName) {
+                    widgetTypeName.innerText = inventory.WidgetTypeName || '';
+                }
+
+                const widgetPrice = clone.querySelector('td.widget-price');
+                if (widgetPrice) {
+                    widgetPrice.innerText = toCurrencyFormat(inventory.WidgetPrice || '0');
+                }
+                
+                const quantity = clone.querySelector('td.quantity');
+                if (quantity) {
+                    quantity.innerText = inventory.Quantity || '0';
+                }
+                
+                const total = clone.querySelector('td.total');
+                if (total) {
+                    total.innerText = toCurrencyFormat(inventory.TotalCost || '0');
+                }
+
+                const hrefInventoryId = clone.querySelector('a.href-inventory-id');
+                if (hrefInventoryId) {
+                    const id = inventory.InventoryId;
+                    if (!id) {
+                        hrefInventoryId.classList.add('d-none');
+                        return;
+                    }
+                    const href = hrefInventoryId.getAttribute('href');
+                    hrefInventoryId.setAttribute('href', `${href}?id=${id}`);
+                }
+
+                tbody.appendChild(clone);
+            });
+
+        };
+
+        const fetchData = () => {
+            toggleLoader(true);
+
+            const routeMappingName = 'fetchData';
+            const routeMapping = routeMappings.find(routeMapping => routeMapping.name === routeMappingName);
+            if (!routeMapping) {
+                console.error(`Unable to find request by name: ${routeMappingName}`);
+                return;
+            }
+
+            const webMessage = buildWebRequest(routeMapping.url, routeMapping.method, routeMapping.body);
+            window.chrome.webview.postMessage(webMessage);
+        };
+
+        const updateTableBodyState = (inventories, error) => {
+            const tbodyItemLoading = document.querySelector('#tr-loading');
+            const tbodyItemError = document.querySelector('#tr-error');
+            const tbodyItemNoData = document.querySelector('#tr-no-data');
+            tbodyItemLoading.classList.add('d-none');
+
+            if (error) {
+                console.error(error);
+
+                tbodyItemError.classList.remove('d-none');
+            }
+
+            if (!error && !inventories.length) {
+                tbodyItemNoData.classList.remove('d-none');
+            } else if (!error) {
+                tbodyItemLoading.remove();
+                tbodyItemNoData.remove();
+                tbodyItemError.remove();
+            }
+        };
+
+        // webview2 communication
+        const onGetAllMessageReceived = response => {
+            toggleLoader(false);
+
+            if (response?.Ok) {
+                const responseBody = response?.Body || '[]';
+                const receivedInventories = JSON.parse(responseBody);
+                inventories.length = 0;
+                inventories.push(...receivedInventories);
+                buildTableBody(inventories);
+            } else {
+                const errorMessage = response?.Body || 'Something went wrong getting the inventories.';
+                updateTableBodyState(inventories, errorMessage);
+            }
+        };
+
+        const routeMappings = [
+            {
+                name: 'fetchData',
+                url: 'Inventories/GetAll',
+                method: 'GET',
+                body: null,
+                callback: onGetAllMessageReceived
+            }
+        ];
+
+        window.addEventListener('messageReceived', e => {
+            if (e.detail?.request) {
+                const request = e.detail.request;
+                const response = e.detail?.response || {};
+                let requestUrl = request.Url;
+                if (requestUrl.indexOf('?') > -1) {
+                    requestUrl = requestUrl.substring(0, requestUrl.indexOf('?'));
+                }
+
+                const matchedRouteMapping = routeMappings.find(routeMapping => routeMapping.url === requestUrl && request?.Method === routeMapping.method);
+                if (matchedRouteMapping) {
+                    matchedRouteMapping.callback(response);
+                }
+            }
+        });
+
+        window.addEventListener('load', () => {
+            const navbar = buildGlobalNavbar('inventory');
+            document.body.prepend(navbar);
+
+            fetchData();
+        }, false);
+    </script>
+</body>
+</html>

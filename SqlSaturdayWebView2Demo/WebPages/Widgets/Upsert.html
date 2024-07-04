@@ -1,0 +1,368 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Widgets</title>
+
+    <link href="https://web-assets.local/shared.css" rel="stylesheet">
+    <link href="https://web-assets.local/Bootstrap/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <main class="container">
+        <h1 class="h3"><span class="action-name"></span> - Widget</h1>
+        <a href="Index.html" class="d-inline-block btn btn-outline-primary mb-3">Go Back</a>
+
+        <form>
+            <div class="row g-3 row-cols-lg-2">
+                <input id="widget-id" class="form-control form-control-lg" type="hidden" name="WidgetId">
+                <div class="mb-3">
+                    <label for="widget-name">Name</label>
+                    <input id="widget-name" class="form-control form-control-lg" type="text" minlength="1" required placeholder="Name" name="WidgetName">
+                </div>
+                <div class="mb-3">
+                    <label for="widget-type-id">Widget Type</label>
+                    <select id="widget-type-id" class="form-select form-select-lg" required name="WidgetTypeId"></select>
+                </div>
+                <div class="mb-3">
+                    <label for="price">Price</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input id="price" class="form-control form-control-lg" type="number" min="0" step="0.01" required pattern="\d+(\.\d{2})?" placeholder="10.00" name="Price">
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex">
+                <button type="submit" class="btn btn-primary d-inline-block">
+                    <span class="action-name"></span>
+                </button>
+                <button id="button-delete" type="button" class="btn btn-outline-danger d-none ms-auto">
+                    Delete
+                </button>
+            </div>
+        </form>
+
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div id="toast-error" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header text-bg-danger">
+                    <strong class="me-auto">Error</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body"></div>
+            </div>
+        </div>
+
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div id="toast-success" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header text-bg-success">
+                    <strong class="me-auto">Success</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://web-assets.local/shared.js"></script>
+    <script src="https://web-assets.local/bootstrap/js/bootstrap.bundle.js"></script>
+    <script>
+        let receivedWidget = false;
+        let receivedWidgetTypes = false;
+        let toastError = null;
+        let toastSuccess = null;
+        const fields = [
+            'WidgetId',
+            'WidgetName',
+            'WidgetTypeId',
+            'Price'
+        ];
+
+        // page methods
+        const deleteWidget = id => {
+            const routeMappingName = 'delete';
+            const routeMapping = routeMappings.find(routeMapping => routeMapping.name === routeMappingName);
+            if (!routeMapping) {
+                console.error(`Unable to find request by name: ${routeMappingName}`);
+                return;
+            }
+
+            toggleLoader(true);
+            const webMessage = buildWebRequest(`${routeMapping.url}?id=${id}`, routeMapping.method, routeMapping.body);
+            window.chrome.webview.postMessage(webMessage);
+        };
+
+        const fetchData = id => {
+            const routeMappingName = 'fetchData';
+            const routeMapping = routeMappings.find(routeMapping => routeMapping.name === routeMappingName);
+            if (!routeMapping) {
+                console.error(`Unable to find request by name: ${routeMappingName}`);
+                return;
+            }
+
+            toggleLoader(true);
+            const webMessage = buildWebRequest(`${routeMapping.url}?id=${id}`, routeMapping.method, routeMapping.body);
+            window.chrome.webview.postMessage(webMessage);
+        };
+
+        const fetchWidgetTypes = () => {
+            toggleLoader(true);
+
+            const routeMappingName = 'fetchWidgetTypes';
+            const routeMapping = routeMappings.find(routeMapping => routeMapping.name === routeMappingName);
+            if (!routeMapping) {
+                console.error(`Unable to find request by name: ${routeMappingName}`);
+                return;
+            }
+
+            const webMessage = buildWebRequest(routeMapping.url, routeMapping.method, routeMapping.body);
+            window.chrome.webview.postMessage(webMessage);
+        };
+
+        const hydrateForm = widget => {
+            const form = document.querySelector('main > form');
+            fields.forEach(field => {
+                const element = form.querySelector(`[name="${field}"]`);
+                if (element) {
+                    element.value = widget[field];
+                }
+            });
+        };
+
+        const hydrateWidgetTypes = widgetTypes => {
+            widgetTypes = widgetTypes || [];
+
+            const widgetTypeIdElement = document.querySelector('#widget-type-id');
+            widgetTypes.forEach(widgetType => {
+                const option = document.createElement('option');
+                option.setAttribute('value', widgetType.WidgetTypeId);
+                option.innerText = widgetType.WidgetTypeName;
+                widgetTypeIdElement.appendChild(option);
+            });
+
+            if (receivedWidget) {
+                const widgetTypeIdElement = document.querySelector('select[name="WidgetTypeId"]');
+                widgetTypeIdElement.value = receivedWidget.WidgetTypeId;
+            }
+        };
+
+        const onButtonDeleteClick = e => {
+            e.preventDefault();
+
+            const idElement = document.querySelector('input[name="WidgetId"]');
+            const id = idElement.value;
+            deleteWidget(id);
+        };
+
+        const onFormSubmit = e => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const payload = fields.reduce((object, key) => {
+                object[key] = null;
+                return object;
+            }, {});
+            for (let key of Object.keys(payload)) {
+                payload[key] = formData.get(key);
+            }
+            upsert(payload);
+        };
+
+        const showSuccessToast = message => {
+            const toastSuccessElement = document.querySelector('#toast-success');
+            toastSuccessElement.querySelector('.toast-body').innerText = message || 'Everything is alright.';
+            toastSuccess = bootstrap.Toast.getOrCreateInstance(toastSuccessElement);
+            toastSuccess.show();
+        };
+
+        const showErrorToast = message => {
+            const toastErrorElement = document.querySelector('#toast-error');
+            toastErrorElement.querySelector('.toast-body').innerText = message || 'Oops, something went wrong.';
+            toastError = bootstrap.Toast.getOrCreateInstance(toastErrorElement);
+            toastError.show();
+        };
+
+        const updateActionName = id => {
+            const actionName = id ? 'Update' : 'Create';
+            const actionNameElements = document.querySelectorAll('.action-name');
+            for (let actionNameElement of Array.from(actionNameElements)) {
+                actionNameElement.innerText = actionName;
+            }
+            if (id) {
+                const buttonDelete = document.querySelector('#button-delete');
+                buttonDelete.classList.add('d-inline-block');
+                buttonDelete.classList.remove('d-none');
+            }
+        };
+
+        const upsert = payload => {
+            const routeMappingName = !!payload.WidgetId ? 'update' : 'create';
+            const routeMapping = routeMappings.find(routeMapping => routeMapping.name === routeMappingName);
+            if (!routeMapping) {
+                console.error(`Unable to find request by name: ${routeMappingName}`);
+                return;
+            }
+            routeMapping.body = payload;
+
+            toggleLoader(true);
+            if (!payload.WidgetId) {
+                payload.WidgetId = '00000000-0000-0000-0000-000000000000';
+            }
+            const webMessage = buildWebRequest(routeMapping.url, routeMapping.method, routeMapping.body);
+            window.chrome.webview.postMessage(webMessage);
+        };
+
+        // webview2 communication
+        const onCreateMessageReceived = response => {
+
+            try {
+                if (!response?.Ok) {
+                    throw new Error(response?.Body);
+                }
+                const responseBody = response?.Body || '{}';
+                const receivedWidget = JSON.parse(responseBody);
+
+                showSuccessToast('Widget type created.');
+                window.setTimeout(() => window.location.href = `Upsert.html?id=${receivedWidget.WidgetId}`, 1000);
+            } catch (e) {
+                toggleLoader(false);
+                const errorMessage = e.message || 'Something went wrong creating the widget.';
+                showErrorToast(errorMessage);
+            }
+        };
+
+        const onDeleteMessageReceived = response => {
+            if (response?.Ok) {
+                showSuccessToast('Widget type deleted.');
+                window.setTimeout(() => window.location.href = 'Index.html', 1000);
+            } else {
+                toggleLoader(false);
+                const errorMessage = response?.Body || 'Something went wrong getting the widget. Redirecting to create.';
+                showErrorToast(errorMessage);
+                updateActionName();
+            }
+        };
+
+        const onGetMessageReceived = response => {
+            if (response?.Ok) {
+                const responseBody = response?.Body || '{}';
+                const widget = JSON.parse(responseBody);
+                receivedWidget = widget;
+                toggleLoader(!receivedWidget || !receivedWidgetTypes);
+                hydrateForm(widget);
+            } else {
+                toggleLoader(false);
+                const errorMessage = response?.Body || 'Something went wrong getting the widget. Redirecting to create.';
+                showErrorToast(errorMessage);
+                updateActionName();
+            }
+        };
+
+        const onGetAllMessageReceived = response => {
+            if (response?.Ok) {
+                const responseBody = response?.Body || '[]';
+                const widgetTypes = JSON.parse(responseBody);
+                receivedWidgetTypes = widgetTypes;
+                toggleLoader(!receivedWidget || !receivedWidgetTypes);
+                hydrateWidgetTypes(widgetTypes);
+            } else {
+                toggleLoader(false);
+                const errorMessage = response?.Body || 'Something went wrong getting the widget types.';
+                updateListGroupState(widgetTypes, errorMessage);
+            }
+        };
+
+        const onUpdateMessageReceived = response => {
+            toggleLoader(false);
+
+            try {
+                if (!response?.Ok) {
+                    throw new Error(response?.Body);
+                }
+                const responseBody = response?.Body || '{}';
+                receivedWidget = JSON.parse(responseBody);
+                hydrateForm(receivedWidget);
+                showSuccessToast('Widget successfully updated.');
+            } catch (e) {
+                const errorMessage = e.message || 'Something went wrong creating the widget.';
+                showErrorToast(errorMessage);
+            }
+        };
+
+        const routeMappings = [
+            {
+                name: 'create',
+                url: 'Widgets/Create',
+                method: 'POST',
+                body: null,
+                callback: onCreateMessageReceived
+            },
+            {
+                name: 'delete',
+                url: 'Widgets/Delete',
+                method: 'DELETE',
+                body: null,
+                callback: onDeleteMessageReceived
+            },
+            {
+                name: 'fetchData',
+                url: 'Widgets/Get',
+                method: 'GET',
+                body: null,
+                callback: onGetMessageReceived
+            },
+            {
+                name: 'update',
+                url: 'Widgets/Update',
+                method: 'POST',
+                body: null,
+                callback: onUpdateMessageReceived
+            },
+            {
+                name: 'fetchWidgetTypes',
+                url: 'WidgetTypes/GetAll',
+                method: 'GET',
+                body: null,
+                callback: onGetAllMessageReceived
+            }
+        ];
+
+        window.addEventListener('messageReceived', e => {
+            if (e.detail?.request) {
+                const request = e.detail.request;
+                const response = e.detail?.response || {};
+                let requestUrl = request.Url;
+                if (requestUrl.indexOf('?') > -1) {
+                    requestUrl = requestUrl.substring(0, requestUrl.indexOf('?'));
+                }
+
+                const matchedRouteMapping = routeMappings.find(routeMapping => routeMapping.url === requestUrl && request?.Method === routeMapping.method);
+                if (matchedRouteMapping) {
+                    matchedRouteMapping.callback(response);
+                }
+            }
+        });
+
+        window.addEventListener('load', () => {
+            const navbar = buildGlobalNavbar('widgets');
+            document.body.prepend(navbar);
+
+            const form = document.querySelector('main > form');
+            form.addEventListener('submit', onFormSubmit);
+
+            const buttonDelete = document.querySelector('#button-delete');
+            buttonDelete.addEventListener('click', onButtonDeleteClick);
+
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const id = urlParams.get('id');
+            updateActionName(id);
+            if (id) {
+                fetchData(id);
+            } else {
+                receivedWidget = {};
+            }
+            fetchWidgetTypes();
+        }, false);
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+﻿.overlay-loading > .spinner-border {
+    height: 10rem;
+    width: 10rem;
+}
+
+td:last-of-type {
+    width: 1px;
+}

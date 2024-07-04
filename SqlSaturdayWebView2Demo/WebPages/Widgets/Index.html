@@ -1,0 +1,187 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Widgets</title>
+
+    <link href="https://web-assets.local/shared.css" rel="stylesheet">
+    <link href="https://web-assets.local/Bootstrap/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <main class="container">
+        <h1 class="h3">Widgets</h1>
+        <div class="d-flex">
+            <a href="Upsert.html" class="d-inline-block btn btn-outline-primary mb-3 me-3">Create</a>
+        </div>
+
+        <table class="table table-striped table-hover align-middle" id="widgets">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Widget Type</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Edit</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="tr-loading">
+                    <td class="text-center fs-3" colspan="6">Loading...</td>
+                </tr>
+                <tr id="tr-no-data" class="d-none">
+                    <td class="text-center fs-3" colspan="6">No widgets, please create a new one.</td>
+                </tr>
+                <tr id="tr-error" class="d-none">
+                    <td class="text-center fs-3" colspan="6">Something went wrong getting the widgets.</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+    <template id="template-tr-inventory">
+        <tr>
+            <td class="widget-name"></td>
+            <td class="widget-type-name"></td>
+            <td class="price"></td>
+            <td>
+                <a href="Upsert.html" class="btn btn-primary href-widget-id">Edit</a>
+            </td>
+        </tr>
+    </template>
+
+    <script src="https://web-assets.local/shared.js"></script>
+    <script src="https://web-assets.local/bootstrap/js/bootstrap.bundle.js"></script>
+    <script>
+        // page methods
+        const widgets = [];
+
+        const buildListGroup = widgets => {
+            widgets = widgets || [];
+            updateListGroupState(widgets);
+
+            const tbody = document.querySelector('#widgets > tbody');
+            if (!widgets.length) {
+                return;
+            }
+
+            const template = document.querySelector('#template-tr-inventory');
+            widgets.forEach(widget => {
+                const clone = template.content.cloneNode(true);
+
+                const widgetName = clone.querySelector('td.widget-name');
+                if (widgetName) {
+                    widgetName.innerText = widget.WidgetName || '';
+                }
+
+                const widgetTypeName = clone.querySelector('td.widget-type-name');
+                if (widgetTypeName) {
+                    widgetTypeName.innerText = widget.WidgetTypeName || '';
+                }
+
+                const price = clone.querySelector('td.price');
+                if (price) {
+                    price.innerText = toCurrencyFormat(widget.Price || '0');
+                }
+
+                const hrefWidgetId = clone.querySelector('a.href-widget-id');
+                if (hrefWidgetId) {
+                    const id = widget.WidgetId;
+                    if (!id) {
+                        hrefWidgetId.classList.add('d-none');
+                        return;
+                    }
+                    const href = hrefWidgetId.getAttribute('href');
+                    hrefWidgetId.setAttribute('href', `${href}?id=${id}`);
+                }
+
+                tbody.appendChild(clone);
+            });
+
+        };
+
+        const fetchData = () => {
+            toggleLoader(true);
+
+            const routeMappingName = 'fetchData';
+            const routeMapping = routeMappings.find(routeMapping => routeMapping.name === routeMappingName);
+            if (!routeMapping) {
+                console.error(`Unable to find request by name: ${routeMappingName}`);
+                return;
+            }
+
+            const webMessage = buildWebRequest(routeMapping.url, routeMapping.method, routeMapping.body);
+            window.chrome.webview.postMessage(webMessage);
+        };
+
+        const updateListGroupState = (widgets, error) => {
+            const listGroupItemLoading = document.querySelector('#tr-loading');
+            const listGroupItemError = document.querySelector('#tr-error');
+            const listGroupItemNoData = document.querySelector('#tr-no-data');
+            listGroupItemLoading.classList.add('d-none');
+
+            if (error) {
+                console.error(error);
+
+                listGroupItemError.classList.remove('d-none');
+            }
+
+            if (!error && !widgets.length) {
+                listGroupItemNoData.classList.remove('d-none');
+            } else if (!error) {
+                listGroupItemLoading.remove();
+                listGroupItemNoData.remove();
+                listGroupItemError.remove();
+            }
+        };
+
+        // webview2 communication
+        const onGetAllMessageReceived = response => {
+            toggleLoader(false);
+
+            if (response?.Ok) {
+                const responseBody = response?.Body || '[]';
+                const receivedWidgets = JSON.parse(responseBody);
+                widgets.length = 0;
+                widgets.push(...receivedWidgets);
+                buildListGroup(widgets);
+            } else {
+                const errorMessage = response?.Body || 'Something went wrong getting the widgets.';
+                updateListGroupState(widgets, errorMessage);
+            }
+        };
+
+        const routeMappings = [
+            {
+                name: 'fetchData',
+                url: 'Widgets/GetAll',
+                method: 'GET',
+                body: null,
+                callback: onGetAllMessageReceived
+            }
+        ];
+
+        window.addEventListener('messageReceived', e => {
+            if (e.detail?.request) {
+                const request = e.detail.request;
+                const response = e.detail?.response || {};
+                let requestUrl = request.Url;
+                if (requestUrl.indexOf('?') > -1) {
+                    requestUrl = requestUrl.substring(0, requestUrl.indexOf('?'));
+                }
+
+                const matchedRouteMapping = routeMappings.find(routeMapping => routeMapping.url === requestUrl && request?.Method === routeMapping.method);
+                if (matchedRouteMapping) {
+                    matchedRouteMapping.callback(response);
+                }
+            }
+        });
+
+        window.addEventListener('load', () => {
+            const navbar = buildGlobalNavbar('widgets');
+            document.body.prepend(navbar);
+
+            fetchData();
+        }, false);
+    </script>
+</body>
+</html>

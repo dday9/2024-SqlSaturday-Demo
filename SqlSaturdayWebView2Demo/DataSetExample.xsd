@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="DataSetExample" targetNamespace="http://tempuri.org/DataSetExample.xsd" xmlns:mstns="http://tempuri.org/DataSetExample.xsd" xmlns="http://tempuri.org/DataSetExample.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="DataSetExample" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="DataSetExample" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="DataSetExample">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Widgets" msprop:Generator_RowEvHandlerName="WidgetsRowChangeEventHandler" msprop:Generator_RowDeletedName="WidgetsRowDeleted" msprop:Generator_RowDeletingName="WidgetsRowDeleting" msprop:Generator_RowEvArgName="WidgetsRowChangeEvent" msprop:Generator_TablePropName="Widgets" msprop:Generator_RowChangedName="WidgetsRowChanged" msprop:Generator_UserTableName="Widgets" msprop:Generator_RowChangingName="WidgetsRowChanging" msprop:Generator_RowClassName="WidgetsRow" msprop:Generator_TableClassName="WidgetsDataTable" msprop:Generator_TableVarName="tableWidgets">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="WidgetId" msdata:DataType="System.Guid, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" msdata:ReadOnly="true" msprop:Generator_ColumnPropNameInTable="WidgetIdColumn" msprop:Generator_ColumnPropNameInRow="WidgetId" msprop:Generator_UserColumnName="WidgetId" msprop:Generator_ColumnVarNameInTable="columnWidgetId" type="xs:string" />
+              <xs:element name="WidgetName" msprop:Generator_ColumnPropNameInTable="WidgetNameColumn" msprop:Generator_ColumnPropNameInRow="WidgetName" msprop:Generator_UserColumnName="WidgetName" msprop:Generator_ColumnVarNameInTable="columnWidgetName" type="xs:string" />
+              <xs:element name="WidgetTypeId" msdata:DataType="System.Guid, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" msprop:Generator_ColumnPropNameInTable="WidgetTypeIdColumn" msprop:Generator_ColumnPropNameInRow="WidgetTypeId" msprop:Generator_UserColumnName="WidgetTypeId" msprop:Generator_ColumnVarNameInTable="columnWidgetTypeId" type="xs:string" />
+              <xs:element name="Price" msprop:Generator_ColumnPropNameInTable="PriceColumn" msprop:Generator_ColumnPropNameInRow="Price" msprop:Generator_UserColumnName="Price" msprop:Generator_ColumnVarNameInTable="columnPrice" type="xs:decimal" default="0" />
+              <xs:element name="WidgetTypeName" msdata:ReadOnly="true" msdata:Expression="Parent.WidgetTypeName" msprop:Generator_ColumnPropNameInTable="WidgetTypeNameColumn" msprop:Generator_ColumnPropNameInRow="WidgetTypeName" msprop:Generator_UserColumnName="WidgetTypeName" msprop:Generator_ColumnVarNameInTable="columnWidgetTypeName" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="WidgetTypes" msprop:Generator_RowEvHandlerName="WidgetTypesRowChangeEventHandler" msprop:Generator_RowDeletedName="WidgetTypesRowDeleted" msprop:Generator_RowDeletingName="WidgetTypesRowDeleting" msprop:Generator_RowEvArgName="WidgetTypesRowChangeEvent" msprop:Generator_TablePropName="WidgetTypes" msprop:Generator_RowChangedName="WidgetTypesRowChanged" msprop:Generator_UserTableName="WidgetTypes" msprop:Generator_RowChangingName="WidgetTypesRowChanging" msprop:Generator_RowClassName="WidgetTypesRow" msprop:Generator_TableClassName="WidgetTypesDataTable" msprop:Generator_TableVarName="tableWidgetTypes">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="WidgetTypeId" msdata:DataType="System.Guid, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" msdata:ReadOnly="true" msprop:Generator_ColumnPropNameInTable="WidgetTypeIdColumn" msprop:Generator_ColumnPropNameInRow="WidgetTypeId" msprop:Generator_UserColumnName="WidgetTypeId" msprop:Generator_ColumnVarNameInTable="columnWidgetTypeId" type="xs:string" />
+              <xs:element name="WidgetTypeName" msprop:Generator_ColumnPropNameInTable="WidgetTypeNameColumn" msprop:Generator_ColumnPropNameInRow="WidgetTypeName" msprop:Generator_UserColumnName="WidgetTypeName" msprop:Generator_ColumnVarNameInTable="columnWidgetTypeName" type="xs:string" />
+              <xs:element name="WidgetTypeSlug" msdata:ReadOnly="true" msprop:Generator_ColumnPropNameInTable="WidgetTypeSlugColumn" msprop:Generator_ColumnPropNameInRow="WidgetTypeSlug" msprop:Generator_UserColumnName="WidgetTypeSlug" msprop:Generator_ColumnVarNameInTable="columnWidgetTypeSlug" type="xs:string" />
+              <xs:element name="SortIndex" msprop:Generator_ColumnPropNameInTable="SortIndexColumn" msprop:Generator_ColumnPropNameInRow="SortIndex" msprop:Generator_UserColumnName="SortIndex" msprop:Generator_ColumnVarNameInTable="columnSortIndex" type="xs:int" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Inventory" msprop:Generator_RowEvHandlerName="InventoryRowChangeEventHandler" msprop:Generator_RowDeletedName="InventoryRowDeleted" msprop:Generator_RowDeletingName="InventoryRowDeleting" msprop:Generator_RowEvArgName="InventoryRowChangeEvent" msprop:Generator_TablePropName="Inventory" msprop:Generator_RowChangedName="InventoryRowChanged" msprop:Generator_UserTableName="Inventory" msprop:Generator_RowChangingName="InventoryRowChanging" msprop:Generator_RowClassName="InventoryRow" msprop:Generator_TableClassName="InventoryDataTable" msprop:Generator_TableVarName="tableInventory">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="InventoryId" msdata:DataType="System.Guid, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" msdata:ReadOnly="true" msprop:Generator_ColumnPropNameInTable="InventoryIdColumn" msprop:Generator_ColumnPropNameInRow="InventoryId" msprop:Generator_UserColumnName="InventoryId" msprop:Generator_ColumnVarNameInTable="columnInventoryId" type="xs:string" />
+              <xs:element name="WidgetId" msdata:DataType="System.Guid, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" msprop:Generator_ColumnPropNameInTable="WidgetIdColumn" msprop:Generator_ColumnPropNameInRow="WidgetId" msprop:Generator_UserColumnName="WidgetId" msprop:Generator_ColumnVarNameInTable="columnWidgetId" type="xs:string" minOccurs="0" />
+              <xs:element name="Quantity" msprop:Generator_ColumnPropNameInTable="QuantityColumn" msprop:Generator_ColumnPropNameInRow="Quantity" msprop:Generator_UserColumnName="Quantity" msprop:Generator_ColumnVarNameInTable="columnQuantity" type="xs:int" default="0" />
+              <xs:element name="WidgetName" msdata:ReadOnly="true" msdata:Expression="Parent.WidgetName" msprop:Generator_ColumnPropNameInTable="WidgetNameColumn" msprop:Generator_ColumnPropNameInRow="WidgetName" msprop:Generator_UserColumnName="WidgetName" msprop:Generator_ColumnVarNameInTable="columnWidgetName" type="xs:string" />
+              <xs:element name="WidgetTypeName" msdata:ReadOnly="true" msdata:Expression="Parent.WidgetTypeName" msprop:Generator_ColumnPropNameInTable="WidgetTypeNameColumn" msprop:Generator_ColumnPropNameInRow="WidgetTypeName" msprop:Generator_UserColumnName="WidgetTypeName" msprop:Generator_ColumnVarNameInTable="columnWidgetTypeName" type="xs:string" />
+              <xs:element name="WidgetPrice" msdata:ReadOnly="true" msdata:Expression="Parent.Price" msprop:Generator_ColumnPropNameInRow="WidgetPrice" msprop:Generator_ColumnPropNameInTable="WidgetPriceColumn" msprop:Generator_ColumnVarNameInTable="columnWidgetPrice" msprop:Generator_UserColumnName="WidgetPrice" type="xs:decimal" minOccurs="0" />
+              <xs:element name="TotalCost" msdata:ReadOnly="true" msdata:Expression="Parent.Price * Quantity" msprop:Generator_ColumnPropNameInTable="TotalCostColumn" msprop:Generator_ColumnPropNameInRow="TotalCost" msprop:Generator_UserColumnName="TotalCost" msprop:Generator_ColumnVarNameInTable="columnTotalCost" type="xs:decimal" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="PK_Widgets_WidgetId" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:Widgets" />
+      <xs:field xpath="mstns:WidgetId" />
+    </xs:unique>
+    <xs:unique name="UQ_WidgetTypes_WidgetTypeSlug">
+      <xs:selector xpath=".//mstns:WidgetTypes" />
+      <xs:field xpath="mstns:WidgetTypeSlug" />
+    </xs:unique>
+    <xs:unique name="PK_WidgetTypes_WidgetTypeId" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:WidgetTypes" />
+      <xs:field xpath="mstns:WidgetTypeId" />
+    </xs:unique>
+    <xs:unique name="UQ_Inventory_WidgetId">
+      <xs:selector xpath=".//mstns:Inventory" />
+      <xs:field xpath="mstns:WidgetId" />
+    </xs:unique>
+    <xs:unique name="PK_Inventory_InventoryId" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:Inventory" />
+      <xs:field xpath="mstns:InventoryId" />
+    </xs:unique>
+    <xs:keyref name="FK_Widgets_Inventory" refer="PK_Widgets_WidgetId" msprop:rel_Generator_UserParentTable="Widgets" msprop:rel_Generator_UserChildTable="Inventory" msprop:rel_Generator_RelationVarName="relationFK_Widgets_Inventory" msprop:rel_Generator_ChildPropName="GetInventoryRows" msprop:rel_Generator_ParentPropName="WidgetsRow" msprop:rel_Generator_UserRelationName="FK_Widgets_Inventory">
+      <xs:selector xpath=".//mstns:Inventory" />
+      <xs:field xpath="mstns:WidgetId" />
+    </xs:keyref>
+    <xs:keyref name="FK_WidgetTypes_Widgets" refer="PK_WidgetTypes_WidgetTypeId" msprop:rel_Generator_UserParentTable="WidgetTypes" msprop:rel_Generator_UserChildTable="Widgets" msprop:rel_Generator_RelationVarName="relationFK_WidgetTypes_Widgets" msprop:rel_Generator_ChildPropName="GetWidgetsRows" msprop:rel_Generator_UserRelationName="FK_WidgetTypes_Widgets" msprop:rel_Generator_ParentPropName="WidgetTypesRow">
+      <xs:selector xpath=".//mstns:Widgets" />
+      <xs:field xpath="mstns:WidgetTypeId" />
+    </xs:keyref>
+  </xs:element>
+</xs:schema>
